@@ -32,6 +32,9 @@ To choose which of the proposed steps has positive impact on rankings we ran the
 
 The scores for different parameter combinations are below.
 
+![image](https://user-images.githubusercontent.com/71390120/173446782-4f07a794-848b-4fb2-9998-4fd89dc30792.png)
+
+![image](https://user-images.githubusercontent.com/71390120/173446889-58b55ed9-6354-4409-80b0-29c89865cabe.png)
 
 
 
