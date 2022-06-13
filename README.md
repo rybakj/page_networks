@@ -11,11 +11,29 @@ We proposed the following changes in the ranking procedure:
 2. Biased random walks (homophily vs equivariance)
 3. Word2vec embedding into vector space
 
-To choose which of these steps has positive impact on rankings we use the following measure.
+# Performance metric
 
-For a single run of the original ranking algorithm, we produce a list of top 100 pages. These are manually labelled (1 = relevant, 0 = irrelevant) and used for algorithm evaluation using the following metric:
+To compare different ranking algorithms we use the following performance measure.
 
-$$ score = \frac{ median(relevant) - median(irrelevant)}{ \sigma(relevant) + \sigma(irrelevant) } $$
+For a single run of the original ranking algorithm, we produce a list of top 100 pages. These are manually labelled (1 = relevant, 0 = irrelevant) and used for algorithm evaluation ("evaluation set") using the following metric:
+
+$$ \text{score} = \frac{ \text{median}(relevant) - \text{median}(irrelevant)}{ \sigma(relevant) + \sigma(irrelevant) }, $$
+
+where $ relevant $ and $ irrelevant $ are rankings of evaluation set pages labelled 1 and 0 respectively.
+
+# Evaluation of proposed changes
+
+To choose which of the proposed steps has positive impact on rankings we ran the following ranking algorithms.
+
+1. **Biased random walks**: Use biased RWs (from the same seeds, using the same walk length, and the same ranking metric (pfpf)). This measures proposed changes 1 & 2.
+2. **Biased random walks & vector embeddings**: Use N2V embedding to vector space. Metric is a simple L2 norm distance from the same seeds as original ranking procedure.
+3. **Biased random walks & vector embeddings & W2V scores** (this corresponds to Node2Vec approach).
+
+
+The scores for different parameter combinations are below.
+
+
+
 
 5. Clustering of ER pages
 6. Ranking based on: 
