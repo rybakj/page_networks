@@ -19,7 +19,7 @@ For a single run of the original ranking algorithm, we produce a list of top 100
 
 $$ \text{score} = \frac{ \text{median}(relevant) - \text{median}(irrelevant)}{ \sigma(relevant) + \sigma(irrelevant) }, $$
 
-where $ relevant $ and $ irrelevant $ are rankings of evaluation set pages labelled 1 and 0 respectively.
+where $ relevant $ and $ irrelevant $ are rankings of evaluation set pages labelled 1 and 0 respectively, and $ \sigma $ is a standard deviation.
 
 # Evaluation of proposed changes
 
