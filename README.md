@@ -21,6 +21,8 @@ $$ \text{score} = \frac{ \text{median}(relevant) - \text{median}(irrelevant)}{ \
 
 where $ relevant $ and $ irrelevant $ are rankings of evaluation set pages labelled 1 and 0 respectively, and $ \sigma $ is a standard deviation.
 
+All of the apporaches discussed here involve some randomness, predominantly coming from random walks. For this reason, scores given below are averaged over multiple runs (usually 10 or 20) of the same method for the same combination of hyperparameters. 
+
 # Evaluation of proposed changes
 
 To choose which of the proposed steps has positive impact on rankings we ran the following ranking algorithms.
@@ -29,13 +31,41 @@ To choose which of the proposed steps has positive impact on rankings we ran the
 2. **Biased random walks & vector embeddings**: Use N2V embedding to vector space. Metric is a simple L2 norm distance from the same seeds as original ranking procedure.
 3. **Biased random walks & vector embeddings & W2V scores** (this corresponds to Node2Vec approach).
 
+The original apporach (undirected graph, unbiased RWs, pfpf score) gives a score of close to zero (with a meaon of **-0.016** and standard deviation 0.033). This constitutes our benchmark.
 
-The scores for different parameter combinations are below.
+The scores for different parameter combinations for the three methods can be found below. While certain parameter combinations are far from ideal (or sensible), the overall improvement in scores is evident.
+
+Overall our preliminary results indicate that performance can be improved by:
+1. Considering directed graph.
+2. Using biased random walks.
+3. Embedding nodes in vector space, especially if an apporpriate loss function is used.
+
+
 
 ![image](https://user-images.githubusercontent.com/71390120/173446782-4f07a794-848b-4fb2-9998-4fd89dc30792.png)
 
+![image](https://user-images.githubusercontent.com/71390120/173681187-da7c20ed-3be6-45e0-944d-d8ecfd006f18.png)
+
 ![image](https://user-images.githubusercontent.com/71390120/173446889-58b55ed9-6354-4409-80b0-29c89865cabe.png)
 
+# Further analysis
+
+The embedding in vector space gives us an opportunity to explore the whole network, in relation to the set of seed pages or economic recovery pages.
+
+In particular, vector embeddings can be analysed by clustering methods and dimensionality reduction techniques which enable visual analysis.
+
+To this end, consider mapping graph nodes to a 10-dimensional vector space and using TSNE to reduce the result to two dimensions. In the plot below the axis correspond to TSNE variables and orange dots are economic recovery pages.
+
+While not particularly beautiful, the economic recovery pages seem to exhibit a cluster structure. The TSNE mapping is highly random, and, over repeated replications, only two (rather than three as this plot may suggest) major clusters of ER pages seems to appear regularly - and these are mosttly visible along the y-axis.
+
+![tsne](https://user-images.githubusercontent.com/71390120/173683883-d97ea3f6-696b-43a8-b490-a95262816303.png)
+
+This encouraged us to look further. We use K-means clustering on a 10-dimensional vector space for this purpose.
+
+The numer of clusters is chosen using the sum of squared distances from cluster centres (see the plot below). Base don this metric we opt for 8 clusters.
+![image](https://user-images.githubusercontent.com/71390120/173684277-113f9186-ddc7-4022-a868-0ad96da0ce27.png)
+
+Interstingly, most of ER pages (33 out of 40) fall into two clusters, supporting the results of TSNE analysis.
 
 
 5. Clustering of ER pages
@@ -43,7 +73,7 @@ The scores for different parameter combinations are below.
   - Nearest neghibour distances from seeds, ER clusters or all ER pages
   - W2V embedding
 
-Ranking systems run multipel times and mean scores. 
+Ranking systems run multiple times and mean scores. 
 
 Simulations
 
