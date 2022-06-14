@@ -69,6 +69,9 @@ Interestingly, most of ER pages (33 out of 40) fall into two clusters, supportin
 
 The plot below illustrates the connections between ER pages, with pages colored by cluster (2 pages were omitted as distort the plot). 
 
+![image](https://user-images.githubusercontent.com/71390120/173689496-61414ecb-492a-45cb-a18e-00ad74b6b8dd.png)
+
+
 It appears that the first cluster (purple) relates to a large extent to education, as it include sfor exmaple pages like:
 /topic/further-education-skills/apprenticeships
 /browse/working/finding-job
@@ -83,7 +86,7 @@ It appears that the first cluster (purple) relates to a large extent to educatio
 The second cluster (orange), on the other hand relates to more general queries, in particular claiming benefits.
 
 
-# Notes for ourselves
+# Notes for self
 
 5. Clustering of ER pages
 6. Ranking based on: 
