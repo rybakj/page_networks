@@ -81,7 +81,7 @@ It appears that the first cluster (purple) relates to a large extent to educatio
 /find-traineeship
 /browse/education
 
-![image](https://user-images.githubusercontent.com/71390120/173688686-953878a4-0cf6-41d9-ace1-237f252c8bb8.png)
+[[[link](https://user-images.githubusercontent.com/71390120/173688686-953878a4-0cf6-41d9-ace1-237f252c8bb8.png)|width=400px]]
 
 The second cluster (orange), on the other hand relates to more general queries, in particular claiming benefits.
 
