@@ -65,7 +65,22 @@ This encouraged us to look further. We use K-means clustering on a 10-dimensiona
 The numer of clusters is chosen using the sum of squared distances from cluster centres (see the plot below). Base don this metric we opt for 8 clusters.
 ![image](https://user-images.githubusercontent.com/71390120/173684277-113f9186-ddc7-4022-a868-0ad96da0ce27.png)
 
-Interstingly, most of ER pages (33 out of 40) fall into two clusters, supporting the results of TSNE analysis.
+Interestingly, most of ER pages (33 out of 40) fall into two clusters, supporting the results of TSNE analysis.
+
+The plot below illustrates the connections between ER pages, with pages colored by cluster (2 pages were omitted as distort the plot). 
+
+It appears that the first cluster (purple) relates to a large extent to education, as it include sfor exmaple pages like:
+/topic/further-education-skills/apprenticeships
+/browse/working/finding-job
+/become-apprentice
+/browse/education/find-course
+/become-apprentice/apply-for-an-apprenticeship
+/find-traineeship
+/browse/education
+
+![image](https://user-images.githubusercontent.com/71390120/173688686-953878a4-0cf6-41d9-ace1-237f252c8bb8.png)
+
+The second cluster (orange), on the other hand relates to more general queries, in particular claiming benefits.
 
 
 # Notes for ourselves
