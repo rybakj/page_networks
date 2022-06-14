@@ -68,6 +68,8 @@ The numer of clusters is chosen using the sum of squared distances from cluster 
 Interstingly, most of ER pages (33 out of 40) fall into two clusters, supporting the results of TSNE analysis.
 
 
+# Notes for ourselves
+
 5. Clustering of ER pages
 6. Ranking based on: 
   - Nearest neghibour distances from seeds, ER clusters or all ER pages
