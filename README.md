@@ -1,17 +1,21 @@
-Explanations here.
+# Whole User Journey (WUJ) analysis for gov.uk
 
-Structure:
-1. Current approach:
-2. - use undirected graph where probability of trnasition is calculated as ...
-3. initialise RWs from a (small) set of nodes (seed pages)
-4. Calculate pfpf (page-frequency-path-frequency) metric to rank 
+The aim of this project is to identify all of the pages relevant to a user journey in gov.uk. The current approach utilises random walks which begin from a small set of seed nodes in an undirected graph. The "page-frequency-path-frequency" metric is utilised to rank the relevance of the pages in the journey. 
 
-We proposed the following changes in the ranking procedure:
-1. Directed graph
-2. Biased random walks (homophily vs equivariance)
-3. Word2vec embedding into vector space
+We proposed a number of changes to this approach:
+- Use a directed graph, rather than an undirected graph
+- Utilise biased random walks (homophily vs equivariance)
+- Utilise Word2Vec embedding
+- Extract named-entities from gov.uk pages to enrich the nodes with metadata
+- Use graph neural networks to improve the edge-level predictions
 
-# Performance metric
+## Contents
+1. Random walk approaches
+2. Named-entity recognition
+3. Graph neural networks
+
+## Random walk approaches
+### Performance metric
 
 To compare different ranking algorithms we use the following performance measure.
 
@@ -23,7 +27,7 @@ where $ relevant $ and $ irrelevant $ are rankings of evaluation set pages label
 
 All of the apporaches discussed here involve some randomness, predominantly coming from random walks. For this reason, scores given below are averaged over multiple runs (usually 10 or 20) of the same method for the same combination of hyperparameters. 
 
-# Evaluation of proposed changes
+### Evaluation of proposed changes
 
 To choose which of the proposed steps has positive impact on rankings we ran the following ranking algorithms.
 
@@ -48,7 +52,7 @@ Overall our preliminary results indicate that performance can be improved by:
 
 ![image](https://user-images.githubusercontent.com/71390120/173446889-58b55ed9-6354-4409-80b0-29c89865cabe.png)
 
-# Further analysis
+### Further analysis
 
 The embedding in vector space gives us an opportunity to explore the whole network, in relation to the set of seed pages or economic recovery pages.
 
@@ -86,7 +90,7 @@ It appears that the first cluster (purple) relates to a large extent to educatio
 The second cluster (orange), on the other hand relates to more general queries, in particular claiming benefits.
 
 
-# Notes for self
+### Notes for self
 
 5. Clustering of ER pages
 6. Ranking based on: 
@@ -103,3 +107,15 @@ Simulations
 1. **Biased RW**: Change RWs (from same seedns, walk length, same ranking metric (pfpf).
 2. **NOW**:  **Vector embeddings (similarity metric)**: RWs from all nodes, W2V embedding and N2V similairty measure to score (based on maximum similarity vs seed pages)
 3. **To DO**: **Vector embeddings (norm metric)**: for the same graph, create all embeddings, calculate all different KNN scores
+
+
+## Named-entity recognition 
+To enrich the nodes (webpages) from gov.uk with features prior to implementing GNNs, inference was performed from a previously created Named-Entity Recognition (NER) model which utilises the DistillBERT architecture (https://arxiv.org/abs/1910.01108). This model can be used to highlight named-entities in a number of categories (e.g., organisation, people) which can be visualisd as follows: 
+
+<img width="1741" alt="Screenshot 2022-06-16 at 19 19 49" src="https://user-images.githubusercontent.com/104083260/174139092-45e6010a-2462-4e46-b227-d55c6418605a.png">
+
+The NER script in this repo can be used to output data into a .csv file in the following format:
+<img width="297" alt="Screenshot 2022-06-16 at 19 21 37" src="https://user-images.githubusercontent.com/104083260/174139369-87196229-ec26-4185-a21c-44ac116470b9.png">
+
+## Graph Neural Networks (GNNs)
+The plan is to experiment with a number of GNN architectures (e.g., GAT, Hyperbolic GCN) to make edge level predictions. 
