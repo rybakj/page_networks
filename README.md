@@ -90,25 +90,6 @@ It appears that the first cluster (purple) relates to a large extent to educatio
 The second cluster (orange), on the other hand relates to more general queries, in particular claiming benefits.
 
 
-### Notes for self
-
-5. Clustering of ER pages
-6. Ranking based on: 
-  - Nearest neghibour distances from seeds, ER clusters or all ER pages
-  - W2V embedding
-
-Ranking systems run multiple times and mean scores. 
-
-Simulations
-
-
-
-
-1. **Biased RW**: Change RWs (from same seedns, walk length, same ranking metric (pfpf).
-2. **NOW**:  **Vector embeddings (similarity metric)**: RWs from all nodes, W2V embedding and N2V similairty measure to score (based on maximum similarity vs seed pages)
-3. **To DO**: **Vector embeddings (norm metric)**: for the same graph, create all embeddings, calculate all different KNN scores
-
-
 ## Named-entity recognition 
 To enrich the nodes (webpages) from gov.uk with features prior to implementing GNNs, inference was performed from a previously created Named-Entity Recognition (NER) model which utilises the DistillBERT architecture (https://arxiv.org/abs/1910.01108). This model can be used to highlight named-entities in a number of categories (e.g., organisation, people) which can be visualisd as follows: 
 
