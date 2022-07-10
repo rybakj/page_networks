@@ -3,7 +3,11 @@ Graph files can be found here: https://drive.google.com/drive/folders/1bLMolKJoR
 Note:
 - `er` stands for economic recovery. 
 - `Adjacency_er` and `Transition_er` refer to the matrices associated with a directed probabilistic graph on ER webpages.
-- Graph is the corresponding graph object (unweighted edges, no features). 
+- `Graph_er` is a graph object (unweighted edges, no features). 
+- `Graph_er_weighted`: same graph object, with edge weights corresponding to node transition probabilities.
+- `Graph_er_weighted_wfeatures`: node features added on top of the graph object.
+
+Note: **node features are dummies for now, created by one-hot encoding of graph nodes**.
 
 
 
