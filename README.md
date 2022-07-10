@@ -1,3 +1,12 @@
+Graph files can be found here: https://drive.google.com/drive/folders/1bLMolKJoRzJKzIEQMTjcWfE0qF_VsoeN?usp=sharing
+
+Note:
+- `er` stands for economic recovery. 
+- `Adjacency_er` and `Transition_er` refer to the matrices associated with a directed probabilistic graph on ER webpages.
+- Graph is the corresponding graph object (unweighted edges, no features). 
+
+
+
 # Whole User Journey (WUJ) analysis for gov.uk
 
 The aim of this project is to identify all of the pages relevant to a user journey in gov.uk. The current approach utilises random walks which begin from a small set of seed nodes in an undirected graph. The "page-frequency-path-frequency" metric is utilised to rank the relevance of the pages in the journey. 
