@@ -7,13 +7,28 @@ Note:
 - `Graph_er_weighted`: same graph object, with edge weights corresponding to node transition probabilities.
 - `Graph_er_weighted_wfeatures`: node features added on top of the graph object.
 
-Note: **node features are dummies for now, created by one-hot encoding of graph nodes**.
 
 
 
 # Whole User Journey (WUJ) analysis for gov.uk
 
-The aim of this project is to identify all of the pages relevant to a user journey in gov.uk. We focus on "economic recovery" use case throughout our analysis.
+The aim of this project is to identify all of the pages relevant to a whole user journey in gov.uk. We focus on "economic recovery" use case throughout our analysis.
+
+## Inputs
+
+In order to answer this question, we turn the webpages of gov.uk into a graph as follows.
+
+Steps:
+1. Start with "seed" pages identified as relevatn to a given user journey.
+2. Obtain pages hyperlinked from the seed pages.
+3. Use BigQuery to extract user movement to and from the pages from steps (1) and (2).
+
+Specifically in step (3) we pick all sessions where user selects at least one webpage from steps (1) and (2) and retrieve all webpages visited during these sessions. 
+
+Output: Probabilistic graph of pages
+- All webpages that appear in the BigQuery are used as graph nodes.
+- Edge weights are the probabilities of moving from one page to another (calculated using the number of such moves in step (3)).
+
 
 ## Solution space
 
@@ -22,6 +37,20 @@ The solutions to this problem can be cateogirsed based on what information is us
 What makes pages / nodes similar?
 - Context: pages with a similar context tend to be similar     
 - Content: pages with similar content tend to be similar
+
+### Context-based approach
+
+***Hypothesis: nodes in a similar context tend to be similar***
+
+Context can be defined in various ways. In the context considered here, this can mean, for example, that if users who visit webpage A often proceed to visiting webpage B, the webpages A and B have similar relevance to a user journey. Alternatively, webpages which appear in many user paths extracted by BigQuery can be seen as (equally) relevant to a given user path.
+
+In the language of graphs these two cases can be can be respectively phrased as:
+- Homophily: nodes that are highly connected or belong to similar clusters have similar relevance.
+- Structural equivalence: nodes with similar structural roles have similar relevance.
+
+In the figure below, the yellow noode represents a seed node. Homophily hypothesis states that yellow and green nodes have similar relevance, while structural equivalence states that yellow and red nodes have similar relevance.
+
+![image](https://user-images.githubusercontent.com/71390120/184164444-81a31ac2-30e0-4b17-87e8-a49fa8aae548.png)
 
 
 ## Current approach
