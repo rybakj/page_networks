@@ -48,10 +48,19 @@ In the language of graphs these two cases can be can be respectively phrased as:
 - Homophily: nodes that are highly connected or belong to similar clusters have similar relevance.
 - Structural equivalence: nodes with similar structural roles have similar relevance.
 
-In the figure below, the yellow noode represents a seed node. Homophily hypothesis states that yellow and green nodes have similar relevance, while structural equivalence states that yellow and red nodes have similar relevance.
+In the figure below, the yellow node represents a seed node. Homophily hypothesis states that yellow and green nodes have similar relevance, while structural equivalence states that yellow and red nodes have similar relevance.
 
 ![image](https://user-images.githubusercontent.com/71390120/184164444-81a31ac2-30e0-4b17-87e8-a49fa8aae548.png)
 
+
+
+### Content-based approach
+
+***Hypothesis: nodes with a similar content tend to be similar***
+
+This approach consists of two steps:
+1. Content extraction: in our case, we will extract named entities from pages.
+2. Content comparison: represent the extracted content as vectors to compare.
 
 ## Current approach
 
