@@ -38,9 +38,9 @@ What makes pages / nodes similar?
 - Context: pages with a similar context tend to be similar     
 - Content: pages with similar content tend to be similar
 
-### Context-based approach
+### 1. Context-based approaches
 
-***Hypothesis: nodes in a similar context tend to be similar***
+*Hypothesis: nodes in a similar context tend to be similar*
 
 Context can be defined in various ways. In the context considered here, this can mean, for example, that if users who visit webpage A often proceed to visiting webpage B, the webpages A and B have similar relevance to a user journey. Alternatively, webpages which appear in many user paths extracted by BigQuery can be seen as (equally) relevant to a given user path.
 
@@ -52,11 +52,13 @@ In the figure below, the yellow node represents a seed node. Homophily hypothesi
 
 ![image](https://user-images.githubusercontent.com/71390120/184164444-81a31ac2-30e0-4b17-87e8-a49fa8aae548.png)
 
+#### Extracting context
 
+One possibility of extracting context of a graph node (i.e. webpage) is to use random walks. Specifically, starting in a given node, say A, a subsequent node is selected from the neighbors of node A randomly. Different types of random walks exist. They differ in whether homophily or structural equivalence are assumed, and based on this the transition probabilities (i.e. probability of selectinga given neighbor of node A) are modified.
 
-### Content-based approach
+### 2. Content-based approaches
 
-***Hypothesis: nodes with a similar content tend to be similar***
+*Hypothesis: nodes with a similar content tend to be similar*
 
 This approach consists of two steps:
 1. Content extraction: in our case, we will extract named entities from pages.
