@@ -14,7 +14,11 @@ Note:
 
 The aim of this project is to identify all of the pages relevant to a whole user journey in gov.uk. We focus on "economic recovery" use case throughout our analysis.
 
-## Inputs
+## Structure
+
+In section 1 we describe how webpages are used to construct probabilistic graph. In section 2 a general framework for solving this problem is presented. Section 3 presents the existing approach of solving thisproblem, which serves as our benchmark while section 4 outlines methods we considered to improve upon this benchmark. Section 5 describes how named entity recognition data were obtained and section 6 contains overview of main results.
+
+## 1. Inputs
 
 In order to answer this question, we turn the webpages of gov.uk into a graph as follows.
 
@@ -30,7 +34,7 @@ Output: Probabilistic graph of pages
 - Edge weights are the probabilities of moving from one page to another (calculated using the number of such moves in step (3)).
 
 
-## Solution space
+## 2. Solution space
 
 The solutions to this problem can be cateogirsed based on what information is used to rank pages. In other words, this can be phrased as a question of "what makes webpages relevant to a user journey". As we chracterise the user journey by seed pages selected by an expert, this problem can be phrased as "what makes two webpages similar" (in a sense relevant to a user journey). Based on this, two main approaches (i.e. two "similarity hypotheses") can be characterised:
 
@@ -38,7 +42,7 @@ What makes pages / nodes similar?
 - Context: pages with a similar context tend to be similar     
 - Content: pages with similar content tend to be similar
 
-### 1. Context-based approaches
+### 2.1 Context-based approaches
 
 *Hypothesis: nodes in a similar context tend to be similar*
 
@@ -56,7 +60,7 @@ In the figure below, the yellow node represents a seed node. Homophily hypothesi
 
 One possibility of extracting context of a graph node (i.e. webpage) is to use random walks. Specifically, starting in a given node, say A, a subsequent node is selected from the neighbors of node A randomly. Different types of random walks exist. They differ in whether homophily or structural equivalence are assumed, and based on this the transition probabilities (i.e. probability of selectinga given neighbor of node A) are modified.
 
-### 2. Content-based approaches
+### 2.2 Content-based approaches
 
 *Hypothesis: nodes with a similar content tend to be similar*
 
@@ -64,14 +68,34 @@ This approach consists of two steps:
 1. Content extraction: in our case, we will extract named entities from pages.
 2. Content comparison: represent the extracted content as vectors to compare.
 
-## Current approach
+## 3. Current approach
 
-1. Use seed pages (and pages linked from the seed pages) to construct a probabilistic graph of user movement using BigQuery.
-  The edge weights of this graph correspond to probabilitiy of a user moving from one page to another (this is obtained by extracting the number of such moves using BigQuery).
- 2. Use undirected random walks from seed nodes (100 walk from each node) and record pages visited along these walks.
- 3. Use "page-frequency-path-frequency" metric to rank the relevance of the pages in the journey. For a given webpage this metric combines the number of walks it occurs on and the (maximum) number of times it occurs within a single random walk.
+Starting from the probabilistic graph described in section 1, the ranking is created as follows:
+ 1. Use undirected random walks from seed nodes (100 walk from each node) and record pages visited along these walks.
+ 2. Use "page-frequency-path-frequency" metric to rank the relevance of the pages in the journey. For a given webpage this metric combines the number of walks it occurs on and the (maximum) number of times it occurs within a single random walk. Specifically, for a given webpage, say B, PFPF score is given by
 
-## Our approach
+$$ \text{PFPF(B)} = \text{number of random walks page B occurs on} \times \text{max number of occarences of page B within a single random walk.} $$
+
+The current approach is thus context-based. Whether it falls closer to homophily or structural equivalence is hard to determine on the metric itself (this can be determined by analysing the random walks themselves).
+
+The whole existing approach, from BigQuery to final rank creation is illustrated on the figure below. In red are the part we seek to modify.
+
+![image|5%](https://user-images.githubusercontent.com/71390120/184177371-333ede2b-5d04-4292-a6fb-96f7294dfd8e.png)
+
+
+## 4. Our approach
+
+We first consider an alternative context-only approach, based on second order random walks (section 4.1). Subsequently, we combine context and content-based approaches using graph neural networks (section 4.2). 
+
+A common feature of our methods is that we seek to encode graph nodes (webpages) as vectors. That is, starting from a graph, for a given node (say node u in the picture below), we seek a mapping of that node into a vector space.
+
+![image](https://user-images.githubusercontent.com/71390120/184178702-f6a3e3b3-216a-4b58-a9c7-46b24b3c742e.png)
+
+This is hardly a surprising feature. Indeed, even the current method embeds nodes as vector in a way (specifically, the vector elements are counts of a given website in a given random walk). What is different in our approach is that this vector is obtained as a solution to an **optimisation problem**, as opposed to a heuristic choice.
+
+## 4.1 Content-based approach
+
+## 4.2 Context-based approach
 
 ### As a modification of current approach
 
