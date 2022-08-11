@@ -80,7 +80,7 @@ The current approach is thus context-based. Whether it falls closer to homophily
 
 The whole existing approach, from BigQuery to final rank creation is illustrated on the figure below. In red are the part we seek to modify.
 
-![image|5%](https://user-images.githubusercontent.com/71390120/184177371-333ede2b-5d04-4292-a6fb-96f7294dfd8e.png)
+<img src="https://user-images.githubusercontent.com/71390120/184177371-333ede2b-5d04-4292-a6fb-96f7294dfd8e.png" width=50% height=50%>
 
 
 ## 4. Our approach
