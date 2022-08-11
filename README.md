@@ -13,7 +13,37 @@ Note: **node features are dummies for now, created by one-hot encoding of graph 
 
 # Whole User Journey (WUJ) analysis for gov.uk
 
-The aim of this project is to identify all of the pages relevant to a user journey in gov.uk. The current approach utilises random walks which begin from a small set of seed nodes in an undirected graph. The "page-frequency-path-frequency" metric is utilised to rank the relevance of the pages in the journey. 
+The aim of this project is to identify all of the pages relevant to a user journey in gov.uk. We focus on "economic recovery" use case throughout our analysis.
+
+## Solution space
+
+The solutions to this problem can be cateogirsed based on what information is used to rank pages. In other words, this can be phrased as a question of "what makes webpages relevant to a user journey". As we chracterise the user journey by seed pages selected by an expert, this problem can be phrased as "what makes two webpages similar" (in a sense relevant to a user journey). Based on this, two main approaches (i.e. two "similarity hypotheses") can be characterised:
+
+What makes pages / nodes similar?
+- Context: pages with a similar context tend to be similar     
+- Content: pages with similar content tend to be similar
+
+
+## Current approach
+
+1. Use seed pages (and pages linked from the seed pages) to construct a probabilistic graph of user movement using BigQuery.
+  The edge weights of this graph correspond to probabilitiy of a user moving from one page to another (this is obtained by extracting the number of such moves using BigQuery).
+ 2. Use undirected random walks from seed nodes (100 walk from each node) and record pages visited along these walks.
+ 3. Use "page-frequency-path-frequency" metric to rank the relevance of the pages in the journey. For a given webpage this metric combines the number of walks it occurs on and the (maximum) number of times it occurs within a single random walk.
+
+## Our approach
+
+### As a modification of current approach
+
+
+
+
+We tried various approaches to this problem. They can all be seen as a successive modification of the curent approach.
+
+1. Replace random walks in the original approach by second-order random walks
+2. 
+
+The current approach utilises random walks which begin from a small set of seed nodes in an undirected graph. The "page-frequency-path-frequency" metric is utilised to rank the relevance of the pages in the journey. 
 
 We proposed a number of changes to this approach:
 - Use a directed graph, rather than an undirected graph
