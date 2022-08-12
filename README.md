@@ -80,7 +80,7 @@ Starting from the probabilistic graph described in section 1, the ranking is cre
  1. Use undirected random walks from seed nodes (100 walk from each node) and record pages visited along these walks.
  2. Use "page-frequency-path-frequency" metric to rank the relevance of the pages in the journey. For a given webpage this metric combines the number of walks it occurs on and the (maximum) number of times it occurs within a single random walk. Specifically, for a given webpage, say B, PFPF score is given by
 
-$$ \text{PFPF(B)} = \text{number of random walks page B occurs on} \times \text{max number of occarences of page B within a single random walk.} $$
+$$ \text{PFPF(B)} = \text{number of random walks page B occurs on} \times \text{max number of occarences of page B within a single random walk.} 
 
 The current approach is thus context-based. Whether it falls closer to homophily or structural equivalence is hard to determine on the metric itself (this can be determined by analysing the random walks themselves).
 
@@ -110,7 +110,7 @@ Overall this corresponds to Node2vec (Reference XXX).
 
 The second-order random walks modify the way in which context is sampled. By selecting hyperparameters, second-order random walks can focus on exploring starting node's neighbours (graph "breadth") or wander far from the starting node (exploring the network "depth"), and to interpolate between these two approaches. 
 
-![image](https://user-images.githubusercontent.com/71390120/184365359-5858f189-d939-458c-a1c3-b79f88e37bd3.png)
+<img src=https://user-images.githubusercontent.com/71390120/184365359-5858f189-d939-458c-a1c3-b79f88e37bd3.png width=40% height=40%>
 
 In the first step, we only modify random walks and leave the original PFPF ranking method intact. In the second step we implement the full Node2vec procedure, that is second-rder random walks together with new node embeddings and a new ranking metric.
 
