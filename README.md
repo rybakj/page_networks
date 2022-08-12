@@ -56,7 +56,13 @@ In the figure below, the yellow node represents a seed node. Homophily hypothesi
 
 ![image](https://user-images.githubusercontent.com/71390120/184164444-81a31ac2-30e0-4b17-87e8-a49fa8aae548.png)
 
-#### Extracting context
+#### Shortcomings of context-based approaches
+
+It is widely recognised that methods such as Node2vec suffer from a few drawbacks. In our setting the most relevant one are:
+1. Methods are not applicable to unseen nodes: If the BigQuery is ran over a different time period (e.g. more recent), new webpages (i.e. new nodes) are likely to be present. The random-walk based approaches discussed here cannot calculate ranking for such new nodes and the whole procedure needs to be re-fitted.
+2. These methods don't consider node features, e.g. the content of webpages. The ranking is thus based purely on the node context, i.e. on the user movement between webpages.
+
+### Extracting context
 
 One possibility of extracting context of a graph node (i.e. webpage) is to use random walks. Specifically, starting in a given node, say A, a subsequent node is selected from the neighbors of node A randomly. Different types of random walks exist. They differ in whether homophily or structural equivalence are assumed, and based on this the transition probabilities (i.e. probability of selectinga given neighbor of node A) are modified.
 
@@ -93,9 +99,54 @@ A common feature of our methods is that we seek to encode graph nodes (webpages)
 
 This is hardly a surprising feature. Indeed, even the current method embeds nodes as vector in a way (specifically, the vector elements are counts of a given website in a given random walk). What is different in our approach is that this vector is obtained as a solution to an **optimisation problem**, as opposed to a heuristic choice.
 
-## 4.1 Content-based approach
+### 4.1 Context-based approaches
 
-## 4.2 Context-based approach
+We modify the original procedure in three ways.
+1. Introduce second-order random walks.
+2. Vector embeddings are arrived at by minimising
+3. Cosine simularity is used as a metric.
+
+Overall this corresponds to Node2vec (Reference XXX). 
+
+The second-order random walks modify the way in which context is sampled. By selecting hyperparameters, second-order random walks can focus on exploring starting node's neighbours (graph "breadth") or wander far from the starting node (exploring the network "depth"), and to interpolate between these two approaches. 
+
+![image](https://user-images.githubusercontent.com/71390120/184365359-5858f189-d939-458c-a1c3-b79f88e37bd3.png)
+
+In the first step, we only modify random walks and leave the original PFPF ranking method intact. In the second step we implement the full Node2vec procedure, that is second-rder random walks together with new node embeddings and a new ranking metric.
+
+In order to compare the three methods (original, 2nd order RWs + PFPF metric, and Node2vec) we run the original rnaking procedure (with a random seed) and manually label top 100 pages as either relevant or irrelevant to a user journey.
+
+We evaluate the three methods using the following score (*higher score = better*)
+
+$$ \frac{ \text{median(irrelevant)} - \text{median(relevant)} }{ \sigma( \text{irrelevant} ) + \sigma( \text{relevant} ) } $$
+
+where "relevant" is a ranking (top = 1, bottom = 100) of pages labelled as relevant to a user journey, and similarly for "irrelevant" , and $ \sigma $ is a standard deviation.
+
+The original method achieves score of around 0, while the 2nd order RWs + PFPF metric achieves a score of 0.22 and Node2vec achieves the score of 0.24 (the latter two averaged over multiple initialisation and hyperparameter choices).
+
+Crucially, the higher score rely on breadth-first search, that is on random walks exploring starting node's neighborhood first (the green arrows in the figure above).
+We will make use of this observation when formulating unsupervised approaches combining node context and content.
+
+### 4.2 Context and content-based approaches
+
+We now seek to combine both webpage context within the graph and content to create a ranking. We will do this using a framework of graph neural networks (GNNs).
+
+GNNs are based on an idea of message passing, where node features are updated to incorporate features of the neighboring nodes. Consider a simple directed graph in the figure below.
+
+In the first stage of message passing, each node aggregates the features of the neighboring nodes. For example, the blue node aggregates node features of its neighbors (in green). Likewise, each of green nodes aggregatse features of its neighbors (in yellow). As a result, we obtain a new graph (on the right), with the same structure but different node features. The blue node will now contain a combination of its own features and features of green nodes (hence the node is two-coloured now), etc.
+This corresponds to a one-layer GNN (a two-layer GNN would repeat the same step of feature aggregation on the graph obtained from the first layer). 
+
+![image](https://user-images.githubusercontent.com/71390120/184371924-ae5338e4-f90e-49ec-99be-6ee32a49032a.png)
+
+There are various ways we can combine the features of node's neighbors with its own features, and this results in different GNN architectures. Once the architecture is selected, the parameters are optimised in the usual way, as a function minimisation. The objective function that is minimised is another crucial difference between different GNN methods.
+
+Throughout our analysis we keep the architecture fixed and use convolutional GNNs (Reference XXXX). We consider two approaches:
+1. Semi-supervised: we manually label part of the nodes and train GNN to solve a classification problem using this subset of nodes.
+2. Unsupervised
+
+#### Semi-supervised approach
+
+#### Unsupervised approach
 
 ### As a modification of current approach
 
