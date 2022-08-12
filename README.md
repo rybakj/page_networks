@@ -148,7 +148,14 @@ Throughout our analysis we keep the architecture fixed and use convolutional GNN
 
 #### Unsupervised approach
 
-### As a modification of current approach
+An unsupervised GNN can be thought of as an encoder-decoder model. Encoder embeds graph nodes into a vector space (as described above). Then, a decoder uses vector embeddings to reconstruct a certain property of the nodes. That is, starting from vector embeddings decoder aims to recontsruct a certain statistic of the nodes. The figure below illustrates this.
+
+![image](https://user-images.githubusercontent.com/71390120/184417829-5ab58787-862e-454d-9959-9447bbb86433.png)
+
+Unsupervised GNN models differ in the construction of the encoder and the statistic that the model is aiming to reconstruct. The statistic is chosen so that the model suits the application at hand.
+
+Our choice of statistics has been motivated by the encouraging results of Node2Vec described earlier. Specifically, we aim to maximise the probability of observing node's neighbors given node's embedding. As this objective function is infeasible to calculate, we use second order random walks for negative sampling, as in Node2Vec. As an encoder, we use a two-layer convolutional GNN. Also in a direct analogy with Node2vec, we use cosine distance as a ranking metric.
+
 
 
 
