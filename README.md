@@ -6,8 +6,8 @@ Graph files can be found here: https://drive.google.com/drive/folders/1bLMolKJoR
 - `method_comparison.xlsb`: Contains top 50 pages for all approaches considered here and, based on these, the evaluation figure displayed below (see "Evaluation" section)
 - `/NER`: contains notebooks and scripts for named-entity-recognition
 - `/context_approaches`: notebooks for context-based approaches, i.e. original approach and Node2Vec
-- `gnns`: notebooks for semi-supervised and unsupervised gnn
-- `src`: contains functions used by notebooks throughout the repor (especially context-based and unsupervised GNN notebooks).
+- `/gnns`: notebooks for semi-supervised and unsupervised gnn
+- `/src`: contains functions used by notebooks throughout the repor (especially context-based and unsupervised GNN notebooks).
 
 
 # Whole User Journey (WUJ) analysis for gov.uk
