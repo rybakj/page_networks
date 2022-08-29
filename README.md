@@ -1,13 +1,13 @@
 Graph files can be found here: https://drive.google.com/drive/folders/1bLMolKJoRzJKzIEQMTjcWfE0qF_VsoeN?usp=sharing
 
-Note:
-- `er` stands for economic recovery. 
-- `Adjacency_er` and `Transition_er` refer to the matrices associated with a directed probabilistic graph on ER webpages.
-- `Graph_er` is a graph object (unweighted edges, no features). 
-- `Graph_er_weighted`: same graph object, with edge weights corresponding to node transition probabilities.
-- `Graph_er_weighted_wfeatures`: node features added on top of the graph object.
-
-
+# Repo structure:
+- `pickle_graph_objects.ipynb`: loads and processes initial graph objects (these are then used as starting points for all models)
+- `processing_labelled_sets.ipynb`: simple manipulation of labelled sets
+- `method_comparison.xlsb`: Contains top 50 pages for all approaches considered here and, based on these, the evaluation figure displayed below (see "Evaluation" section)
+- `/NER`: contains notebooks and scripts for named-entity-recognition
+- `/context_approaches`: notebooks for context-based approaches, i.e. original approach and Node2Vec
+- `gnns`: notebooks for semi-supervised and unsupervised gnn
+- `src`: contains functions used by notebooks throughout the repor (especially context-based and unsupervised GNN notebooks).
 
 
 # Whole User Journey (WUJ) analysis for gov.uk
@@ -139,7 +139,7 @@ GNNs are based on an idea of message passing, where node features are updated to
 In the first stage of message passing, each node aggregates the features of the neighboring nodes. For example, the blue node aggregates node features of its neighbors (in green). Likewise, each of green nodes aggregatse features of its neighbors (in yellow). As a result, we obtain a new graph (on the right), with the same structure but different node features. The blue node will now contain a combination of its own features and features of green nodes (hence the node is two-coloured now), etc.
 This corresponds to a one-layer GNN (a two-layer GNN would repeat the same step of feature aggregation on the graph obtained from the first layer). 
 
-![image](https://user-images.githubusercontent.com/71390120/184371924-ae5338e4-f90e-49ec-99be-6ee32a49032a.png)
+<img src=https://user-images.githubusercontent.com/71390120/184371924-ae5338e4-f90e-49ec-99be-6ee32a49032a.png width=80% height=80%>
 
 There are various ways we can combine the features of node's neighbors with its own features, and this results in different GNN architectures. Once the architecture is selected, the parameters are optimised in the usual way, as a function minimisation. The objective function that is minimised is another crucial difference between different GNN methods.
 
@@ -171,7 +171,7 @@ We have also experimented with other models such as the Graph Attention Network 
 
 An unsupervised GNN can be thought of as an encoder-decoder model. Encoder embeds graph nodes into a vector space (as described above). Then, a decoder uses vector embeddings to reconstruct a certain property of the nodes. That is, starting from vector embeddings decoder aims to recontsruct a certain statistic of the nodes. The figure below illustrates this.
 
-![image](https://user-images.githubusercontent.com/71390120/184417829-5ab58787-862e-454d-9959-9447bbb86433.png)
+<img src=https://user-images.githubusercontent.com/71390120/184417829-5ab58787-862e-454d-9959-9447bbb86433.png width=80% height=80%>
 
 *Source: Hamilton, 2020*
 
@@ -189,29 +189,12 @@ In order to compare different methods of ranking webpages, we proceed as follows
 As slready mentioned we focus on "economi recovery" whole user journey. However, in many cases we found it hard to decide whether a given webpage is relevant or irrelevant to the user journey. For this reason, we use two different sets of labels (one set labelled by Douglas, one by Jakub) and report the average of these two labelled sets. Overall, we label 300 webpages, of which 53% are labelled as relevant in one set of labels, while 60% are deemed relevant in another set of labels.
 
 The figure below shows the % of relevant pages (y-axis) within a given number of top pages (x-axis), for each method.
-![image](https://user-images.githubusercontent.com/71390120/187199771-28b2fd66-289d-45aa-844f-a48142005922.png)
+<img src=https://user-images.githubusercontent.com/71390120/187199771-28b2fd66-289d-45aa-844f-a48142005922.png width=70% height=70%>
 
-
-As we can see, Node2Vec performs significantly better than other methods. This seems to be due to its bias to explore neighboring nodes of a starting node (i.e. seed node). For example, when seed nodes are: '/find-a-job', '/universal-credit', and '/government/collections/financial-support-for-businesses-during-coronavirus-covid-19', the top 20 pages are as follows:
+As we can see, Node2Vec performs significantly better than other methods. This seems to be due to its bias to explore neighboring nodes of a starting node (i.e. seed node). For example, when seed nodes are: `/find-a-job`, `/universal-credit`, and `/government/collections/financial-support-for-businesses-during-coronavirus-covid-19`, the top 20 pages are as follows:
     
-/advertise-job
-/universal-credit/contact-universal-credit
-/contact-jobcentre-plus/new-benefit-claims
-/government/organisations/department-for-work-pensions/about/recruitment
-/universal-credit/how-to-claim
-/guidance/universal-credit-advances
-/apply-universal-credit
-/universal-credit/eligibility
-/business-coronavirus-support-finder
-/sign-in-universal-credit
-/contact-jobcentre-plus
-/contact-jobcentre-plus/existing-benefit-claims
-/contact-jobcentre-plus/change-cancel-appointment
-/universal-credit/what-youll-get
-/guidance/covid-19-coronavirus-restrictions-what-you-can-and-cannot-do
-/coronavirus/business-support
-/jobcentre-plus-help-for-recruiters
 ![image](https://user-images.githubusercontent.com/71390120/187200192-b2aec9e8-e699-4e27-9ad5-dc657e2d4004.png)
+
 
 A potential disadvantage is that webpages relevant to a user journey, but not falling into the three categories represented by the seed pages, are not uncovered.
 
