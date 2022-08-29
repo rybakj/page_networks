@@ -16,18 +16,18 @@ The aim of this project is to identify all of the pages relevant to a whole user
 
 ## Structure
 
-In section 1 we describe how webpages are used to construct probabilistic graph. In section 2 a general framework for solving this problem is presented. Section 3 presents the existing approach of solving thisproblem, which serves as our benchmark while section 4 outlines methods we considered to improve upon this benchmark. Section 5 describes how named entity recognition data were obtained and section 6 contains overview of main results.
+In Section 1 we describe how webpages are used to construct probabilistic graph. Section 2 categorises different approaches to webpage ranking. Section 3 presents the existing approach to identifying relevant webpages, which serves as our benchmark, while Section 4 outlines methods we considered to improve upon this benchmark. Section 5 describes how named entity recognition data were obtained and Section 6 contains overview of main results.
 
 ## 1. Inputs
 
-In order to answer this question, we turn the webpages of gov.uk into a graph as follows.
+Starting with an expert-compiled list of webpages deemed relevant for a user journey, a probabilistic graph of gov.uk webpages is constructed. We use the existing approach to constructing such graph, which is briefly described below. For our analysis, we load a probabilistic graph already created by the DataLabs team.
 
 Steps:
-1. Start with "seed" pages identified as relevatn to a given user journey.
+1. Start with "seed" pages identified as relevant to a given user journey.
 2. Obtain pages hyperlinked from the seed pages.
 3. Use BigQuery to extract user movement to and from the pages from steps (1) and (2).
 
-Specifically in step (3) we pick all sessions where user selects at least one webpage from steps (1) and (2) and retrieve all webpages visited during these sessions. 
+Specifically, in step (3) we pick all sessions where user selects at least one webpage from steps (1) and (2) and retrieve all webpages visited during these sessions. 
 
 Output: Probabilistic graph of pages
 - All webpages that appear in the BigQuery are used as graph nodes.
@@ -36,7 +36,7 @@ Output: Probabilistic graph of pages
 
 ## 2. Solution space
 
-The solutions to this problem can be cateogirsed based on what information is used to rank pages. In other words, this can be phrased as a question of "what makes webpages relevant to a user journey". As we chracterise the user journey by seed pages selected by an expert, this problem can be phrased as "what makes two webpages similar" (in a sense relevant to a user journey). Based on this, two main approaches (i.e. two "similarity hypotheses") can be characterised:
+We can categorise solutions based on what information is used to rank webpages. In our context, this can be phrased as a question of "what makes webpages relevant to a user journey". As we chracterise the user journey by seed pages selected by an expert, this problem can be phrased as "what makes two webpages similar" (in a sense relevant to a user journey). Based on this, two main approaches (i.e. two "similarity hypotheses") can be characterised:
 
 What makes pages / nodes similar?
 - Context: pages with a similar context tend to be similar     
@@ -56,57 +56,54 @@ In the figure below, the yellow node represents a seed node. Homophily hypothesi
 
 ![image](https://user-images.githubusercontent.com/71390120/184164444-81a31ac2-30e0-4b17-87e8-a49fa8aae548.png)
 
-#### Shortcomings of context-based approaches
-
-It is widely recognised that methods such as Node2vec suffer from a few drawbacks. In our setting the most relevant one are:
-1. Methods are not applicable to unseen nodes: If the BigQuery is ran over a different time period (e.g. more recent), new webpages (i.e. new nodes) are likely to be present. The random-walk based approaches discussed here cannot calculate ranking for such new nodes and the whole procedure needs to be re-fitted.
-2. These methods don't consider node features, e.g. the content of webpages. The ranking is thus based purely on the node context, i.e. on the user movement between webpages.
-
 ### Extracting context
 
-One possibility of extracting context of a graph node (i.e. webpage) is to use random walks. Specifically, starting in a given node, say A, a subsequent node is selected from the neighbors of node A randomly. Different types of random walks exist. They differ in whether homophily or structural equivalence are assumed, and based on this the transition probabilities (i.e. probability of selectinga given neighbor of node A) are modified.
+One possibility of extracting context of a graph node (i.e. webpage) is to use random walks. Specifically, starting in a given node, say A, a subsequent node is selected from the neighbors of node A randomly. Different types of random walks exist. They differ in whether homophily or structural equivalence are assumed, and based on this the transition probabilities (i.e. probability of selecting a given neighbor of node A) are modified, in order to bias the random walks to explore the relevant part of the graph (neighborhoods under homophily, far-away nodes under structural equivalence).
 
 ### 2.2 Content-based approaches
 
 *Hypothesis: nodes with a similar content tend to be similar*
 
+The shortcoming of context-based approaches is that they ignore the content of webpages. Since webpages with similar content are likely to cover related topics, and thus have similar relevance to a user journey, incorporating content could be beneficial for webpage ranking. 
+
 This approach consists of two steps:
 1. Content extraction: in our case, we will extract named entities from pages.
-2. Content comparison: represent the extracted content as vectors to compare.
+2. Content comparison: represent the extracted content as vectors and combine them with the graph representation.
 
 ## 3. Current approach
 
-Starting from the probabilistic graph described in section 1, the ranking is created as follows:
- 1. Use undirected random walks from seed nodes (100 walk from each node) and record pages visited along these walks.
+Starting from the probabilistic graph described in Section 1, the ranking is created as follows:
+ 1. Run undirected random walks from seed nodes (100 walks of length 100 from each node) and record pages visited along these walks.
  2. Use "page-frequency-path-frequency" metric to rank the relevance of the pages in the journey. For a given webpage this metric combines the number of walks it occurs on and the (maximum) number of times it occurs within a single random walk. Specifically, for a given webpage, say B, PFPF score is given by
 
-$$ \text{PFPF(B)} = \text{number of random walks page B occurs on} \times \text{max number of occarences of page B within a single random walk.} 
+$$ \text{PFPF(B)} = \text{number of random walks page B occurs on} \times \text{max number of occarences of page B within a single random walk.} $$
 
-The current approach is thus context-based. Whether it falls closer to homophily or structural equivalence is hard to determine on the metric itself (this can be determined by analysing the random walks themselves).
+The current approach is thus context-based. As this approach lets random walks wander far from the starting node, it is likely to be biased towards structural equivalence assumption (although a more detailed analysis would be needed to confirm this).
 
 The whole existing approach, from BigQuery to final rank creation is illustrated on the figure below. In red are the part we seek to modify.
 
 <img src="https://user-images.githubusercontent.com/71390120/184177371-333ede2b-5d04-4292-a6fb-96f7294dfd8e.png" width=50% height=50%>
 
-
 ## 4. Our approach
 
-We first consider an alternative context-only approach, based on second order random walks (section 4.1). Subsequently, we combine context and content-based approaches using graph neural networks (section 4.2). 
+We first consider an alternative context-only approach, based on second-order random walks (Section 4.1), introduced by Grover et al. (2016). Subsequently, we combine context and content-based approaches using graph neural networks (Section 4.2). 
 
 A common feature of our methods is that we seek to encode graph nodes (webpages) as vectors. That is, starting from a graph, for a given node (say node u in the picture below), we seek a mapping of that node into a vector space.
 
 ![image](https://user-images.githubusercontent.com/71390120/184178702-f6a3e3b3-216a-4b58-a9c7-46b24b3c742e.png)
 
-This is hardly a surprising feature. Indeed, even the current method embeds nodes as vector in a way (specifically, the vector elements are counts of a given website in a given random walk). What is different in our approach is that this vector is obtained as a solution to an **optimisation problem**, as opposed to a heuristic choice.
+*Source: Hamilton, 2020*
+
+This is hardly a surprising feature. Indeed, even the current method embeds nodes as vectors (specifically, each node is encoded in a vector of length 100, with elements given by the counts of the corresponding website in each random walk). What is different in our approach is that this vector is obtained as a solution to an **optimisation problem**, as opposed to a heuristic rule.
 
 ### 4.1 Context-based approaches
 
 We modify the original procedure in three ways.
 1. Introduce second-order random walks.
-2. Vector embeddings are arrived at by minimising
-3. Cosine simularity is used as a metric.
+2. Vector embeddings are a solution to an optimisation problem.
+3. Cosine simularity is used as a similarity metric.
 
-Overall this corresponds to Node2vec (Reference XXX). 
+Overall this corresponds to Node2vec (Grover et al, 2016). 
 
 The second-order random walks modify the way in which context is sampled. By selecting hyperparameters, second-order random walks can focus on exploring starting node's neighbours (graph "breadth") or wander far from the starting node (exploring the network "depth"), and to interpolate between these two approaches. 
 
@@ -126,6 +123,12 @@ The original method achieves score of around 0, while the 2nd order RWs + PFPF m
 
 Crucially, the higher score rely on breadth-first search, that is on random walks exploring starting node's neighborhood first (the green arrows in the figure above).
 We will make use of this observation when formulating unsupervised approaches combining node context and content.
+
+#### Shortcomings of context-based approaches
+
+It is widely recognised that methods such as Node2vec suffer from a number of drawbacks. In our setting the most relevant one are:
+1. Methods are not applicable to unseen nodes: If the BigQuery is ran over a different time period (e.g. more recent), new webpages (i.e. new nodes) are likely to be present. The random-walk based approaches discussed here cannot calculate ranking for such new nodes and the whole procedure needs to be re-fitted.
+2. These methods don't consider node features, e.g. the content of webpages. The ranking is thus based purely on the node context, i.e. on the user movement between webpages.
 
 ### 4.2 Context and content-based approaches
 
@@ -151,6 +154,8 @@ Throughout our analysis we keep the architecture fixed and use convolutional GNN
 An unsupervised GNN can be thought of as an encoder-decoder model. Encoder embeds graph nodes into a vector space (as described above). Then, a decoder uses vector embeddings to reconstruct a certain property of the nodes. That is, starting from vector embeddings decoder aims to recontsruct a certain statistic of the nodes. The figure below illustrates this.
 
 ![image](https://user-images.githubusercontent.com/71390120/184417829-5ab58787-862e-454d-9959-9447bbb86433.png)
+
+*Source: Hamilton, 2020*
 
 Unsupervised GNN models differ in the construction of the encoder and the statistic that the model is aiming to reconstruct. The statistic is chosen so that the model suits the application at hand.
 
@@ -265,3 +270,10 @@ The NER script in this repo can be used to output data into a .csv file in the f
 
 ## Graph Neural Networks (GNNs)
 The plan is to experiment with a number of GNN architectures (e.g., GAT, Hyperbolic GCN) to make edge level predictions. 
+
+
+# References
+
+Grover, A. and Leskovec, J., 2016, August. node2vec: Scalable feature learning for networks. In Proceedings of the 22nd ACM SIGKDD international conference on Knowledge discovery and data mining (pp. 855-864).
+
+Hamilton, W.L., 2020. Graph representation learning. Synthesis Lectures on Artifical Intelligence and Machine Learning, 14(3), pp.1-159.
