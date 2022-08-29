@@ -158,9 +158,10 @@ def add_onehot_features(G, matrix_features, omitted_nodes_index = []):
     return( G_wfeatures, matrix_features )  
 
 
+###########################################################
 
 
-
+# Source: https://github.com/aditya-grover/node2vec (but modified)
 class Graph():
     
     def __init__(self, nx_G, is_directed, p, q):
@@ -391,104 +392,6 @@ def read_graph():
 
 
 
-
-############### DIM REDUCTION ###############
-
-
-def calculate_l2_distance(embeddings, reference_vectors_embeddings):
-    '''
-    For given embeddings, and embeddings of reterence vectors, calulate mean and median distances
-    from each embedding vector to reference vector embeddings.
-    '''
-    mean_distances = [np.linalg.norm(x - reference_vectors_embeddings, axis = 1).mean() for x in embeddings]
-    median_distances = [np.median( np.linalg.norm(x - reference_vectors_embeddings, axis = 1) ) for x in embeddings]
-
-    return(mean_distances, median_distances)
-
-def calculate_n2v_distance(G, model, seeds, stats = np.max):
-    '''
-    For any given node in G, calculate similairty to each seed page and return the given summary 
-    statistics of these scores.
-    Returns scores for all nodes in G.
-    '''
-
-    rankings = list()
-    page_paths = list()
-
-    for node in G.nodes:
-
-        rankings_node = list()
-
-        for seed in seeds:
-            rankings_node.append( model.wv.similarity(node, seed) )
-
-        rankings.append( stats( rankings_node ) )
-        page_paths.append( node )
-
-    return( rankings, page_paths )
-
-
-
-def fit_kmeans(data, n_components):
-    scaler = StandardScaler()
-    scaler.fit(data)
-    data_standardised = scaler.transform(data)
-    
-
-    kmeans = KMeans(n_clusters=n_components)
-    kmeans_fit = kmeans.fit(data_standardised)
-    
-    distances = kmeans_fit.inertia_
-    labels = kmeans_fit.labels_
-    centres = kmeans.cluster_centers_
-    
-    return(labels, distances, centres)
-    
-    
-
-def squared_distances(model, n_components = range(1,10)):
-    sum_of_squared_distances = []
-    
-    
-    for k in n_components:
-        _, _, distances, centres = reduce_dim_kmeans(model, k)
-        sum_of_squared_distances.append(distances)
-        
-    return(sum_of_squared_distances)
-
-
-
-def reduce_dim_kmeans(model, n_components):
-    
-    vectors = np.asarray(model.wv.vectors)
-    labels = np.asarray(model.wv.index_to_key)  
-    
-    kmean_labels, distances, centres = fit_kmeans(vectors, n_components)
-    
-    return(labels, kmean_labels, distances, centres)
-    
-    
-
-
-def reduce_dimensions(model):
-    num_dimensions = 2  # final num dimensions (2D, 3D, etc)
-
-    # extract the words & their vectors, as numpy arrays
-    vectors = np.asarray(model.wv.vectors)
-    labels = np.asarray(model.wv.index_to_key)  # fixed-width numpy strings
-
-    # reduce using t-SNE
-    tsne = TSNE(n_components=num_dimensions, random_state=0)
-    vectors = tsne.fit_transform(vectors)
-
-    x_vals = [v[0] for v in vectors]
-    if num_dimensions > 1:
-        y_vals = [v[1] for v in vectors]
-    else:
-        pass
-    return x_vals, y_vals, labels
-
-
 ################ Node2Vec functions ####################
 
 def learn_embeddings(walks):
@@ -568,6 +471,39 @@ def get_min_mean_med_l2_distances(mm, seed_pages_used):
           )
 
 
+def calculate_l2_distance(embeddings, reference_vectors_embeddings):
+    '''
+    For given embeddings, and embeddings of reterence vectors, calulate mean and median distances
+    from each embedding vector to reference vector embeddings.
+    '''
+    mean_distances = [np.linalg.norm(x - reference_vectors_embeddings, axis = 1).mean() for x in embeddings]
+    median_distances = [np.median( np.linalg.norm(x - reference_vectors_embeddings, axis = 1) ) for x in embeddings]
+
+    return(mean_distances, median_distances)
+
+def calculate_n2v_distance(G, model, seeds, stats = np.max):
+    '''
+    For any given node in G, calculate similairty to each seed page and return the given summary 
+    statistics of these scores.
+    Returns scores for all nodes in G.
+    '''
+
+    rankings = list()
+    page_paths = list()
+
+    for node in G.nodes:
+
+        rankings_node = list()
+
+        for seed in seeds:
+            rankings_node.append( model.wv.similarity(node, seed) )
+
+        rankings.append( stats( rankings_node ) )
+        page_paths.append( node )
+
+    return( rankings, page_paths )
+
+
 def calc_median_difference_n2v(df, labelled_data, standardise = True, page_path = "pagePath"):
     '''df needs to be a result of calling rw.page_freq_path_freq_ranking()
     
@@ -624,3 +560,66 @@ def set_seed(seed_number):
     np.random.seed(seed_number)
 
     return ()
+
+
+############### DIM REDUCTION ###############
+
+
+def fit_kmeans(data, n_components):
+    scaler = StandardScaler()
+    scaler.fit(data)
+    data_standardised = scaler.transform(data)
+    
+
+    kmeans = KMeans(n_clusters=n_components)
+    kmeans_fit = kmeans.fit(data_standardised)
+    
+    distances = kmeans_fit.inertia_
+    labels = kmeans_fit.labels_
+    centres = kmeans.cluster_centers_
+    
+    return(labels, distances, centres)
+    
+    
+
+def squared_distances(model, n_components = range(1,10)):
+    sum_of_squared_distances = []
+    
+    
+    for k in n_components:
+        _, _, distances, centres = reduce_dim_kmeans(model, k)
+        sum_of_squared_distances.append(distances)
+        
+    return(sum_of_squared_distances)
+
+
+
+def reduce_dim_kmeans(model, n_components):
+    
+    vectors = np.asarray(model.wv.vectors)
+    labels = np.asarray(model.wv.index_to_key)  
+    
+    kmean_labels, distances, centres = fit_kmeans(vectors, n_components)
+    
+    return(labels, kmean_labels, distances, centres)
+    
+    
+
+
+def reduce_dimensions(model):
+    num_dimensions = 2  # final num dimensions (2D, 3D, etc)
+
+    # extract the words & their vectors, as numpy arrays
+    vectors = np.asarray(model.wv.vectors)
+    labels = np.asarray(model.wv.index_to_key)  # fixed-width numpy strings
+
+    # reduce using t-SNE
+    tsne = TSNE(n_components=num_dimensions, random_state=0)
+    vectors = tsne.fit_transform(vectors)
+
+    x_vals = [v[0] for v in vectors]
+    if num_dimensions > 1:
+        y_vals = [v[1] for v in vectors]
+    else:
+        pass
+    return x_vals, y_vals, labels
