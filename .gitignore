@@ -1,5 +1,1 @@
-data/inputs/
-data/outputs/graph_objects/
-data/outputs/node2vec/
-data/outputs/original_method/
-data/outputs/ugnn/
+data/
