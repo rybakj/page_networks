@@ -105,13 +105,13 @@ We modify the original procedure in three ways.
 
 Overall this corresponds to Node2vec (Grover et al, 2016). 
 
-The second-order random walks modify the way in which context is sampled. By selecting hyperparameters, second-order random walks can focus on exploring starting node's neighbours (graph "breadth") or wander far from the starting node (exploring the network "depth"), and to interpolate between these two approaches. 
+The second-order random walks modify the way in which node context is sampled. By varying the choice of hyperparameters, second-order random walks can focus on exploring starting node's neighbours (graph "breadth") or wander far from the starting node (exploring the network "depth"), and to interpolate between these two approaches. 
 
 <img src=https://user-images.githubusercontent.com/71390120/184365359-5858f189-d939-458c-a1c3-b79f88e37bd3.png width=40% height=40%>
 
-In the first step, we only modify random walks and leave the original PFPF ranking method intact. In the second step we implement the full Node2vec procedure, that is second-rder random walks together with new node embeddings and a new ranking metric.
+In the first step, we only modify random walks and leave the original PFPF ranking method intact. In the second step we run the full Node2vec procedure, that is the second-order random walks together with new node embeddings and a new ranking metric.
 
-In order to compare the three methods (original, 2nd order RWs + PFPF metric, and Node2vec) we run the original rnaking procedure (with a random seed) and manually label top 100 pages as either relevant or irrelevant to a user journey.
+In order to compare the three methods (original, 2nd order RWs + PFPF metric, and Node2vec) we run the original ranking procedure (with a random seed) and manually label top 100 pages as either relevant or irrelevant to a user journey.
 
 We evaluate the three methods using the following score (*higher score = better*)
 
@@ -119,20 +119,20 @@ $$ \frac{ \text{median(irrelevant)} - \text{median(relevant)} }{ \sigma( \text{i
 
 where "relevant" is a ranking (top = 1, bottom = 100) of pages labelled as relevant to a user journey, and similarly for "irrelevant" , and $ \sigma $ is a standard deviation.
 
-The original method achieves score of around 0, while the 2nd order RWs + PFPF metric achieves a score of 0.22 and Node2vec achieves the score of 0.24 (the latter two averaged over multiple initialisation and hyperparameter choices).
+The original method achieves score of around 0, while the 2nd order RWs + PFPF metric achieves a score of 0.22 and Node2vec achieves the score of 0.24 (the latter two averaged over multiple initialisation and hyperparameter choices). As all three methods are random in nature, we average scores over 10 runs (for each hyperparameter choice).
 
-Crucially, the higher score rely on breadth-first search, that is on random walks exploring starting node's neighborhood first (the green arrows in the figure above).
+Crucially, the higher scores rely on breadth-first search, that is on random walks exploring starting node's neighborhood first (the green arrows in the figure above).
 We will make use of this observation when formulating unsupervised approaches combining node context and content.
 
 #### Shortcomings of context-based approaches
 
-It is widely recognised that methods such as Node2vec suffer from a number of drawbacks. In our setting the most relevant one are:
+It is widely recognised that methods such as Node2vec suffer from a number of drawbacks (see e.g. Hamilton, 2020). In our setting the most relevant one are:
 1. Methods are not applicable to unseen nodes: If the BigQuery is ran over a different time period (e.g. more recent), new webpages (i.e. new nodes) are likely to be present. The random-walk based approaches discussed here cannot calculate ranking for such new nodes and the whole procedure needs to be re-fitted.
 2. These methods don't consider node features, e.g. the content of webpages. The ranking is thus based purely on the node context, i.e. on the user movement between webpages.
 
 ### 4.2 Context and content-based approaches
 
-We now seek to combine both webpage context within the graph and content to create a ranking. We will do this using a framework of graph neural networks (GNNs).
+We now seek to combine both webpage context and content to create a ranking. For content, we use entities appearing on each webpage as node (webpage) features (see next section for more details). Given the node features, we use graph neural networks (GNNs) to combine node context and node features (content) in a single model.
 
 GNNs are based on an idea of message passing, where node features are updated to incorporate features of the neighboring nodes. Consider a simple directed graph in the figure below.
 
@@ -143,11 +143,29 @@ This corresponds to a one-layer GNN (a two-layer GNN would repeat the same step 
 
 There are various ways we can combine the features of node's neighbors with its own features, and this results in different GNN architectures. Once the architecture is selected, the parameters are optimised in the usual way, as a function minimisation. The objective function that is minimised is another crucial difference between different GNN methods.
 
-Throughout our analysis we keep the architecture fixed and use convolutional GNNs (Reference XXXX). We consider two approaches:
-1. Semi-supervised: we manually label part of the nodes and train GNN to solve a classification problem using this subset of nodes.
-2. Unsupervised
+Throughout our analysis we keep the architecture fixed and use convolutional GNNs (Kipf and Welling, 2016). We consider two approaches:
+1. Semi-supervised: we manually label part of the nodes and train GNNs to solve a classification problem using this subset of nodes.
+2. Unsupervised: Use encoder-decoder models to rank nodes.
+
+
+
+#### Node features: Named-entity recognition 
+To enrich the nodes (webpages) from gov.uk with features prior to implementing GNNs, inference was performed from a previously created Named-Entity Recognition (NER) model which utilises the DistillBERT architecture (Sanh et al. 2019). This model can be used to highlight named-entities in a number of categories (e.g., organisation, people) which can be visualisd as follows: 
+
+<img width="1741" alt="Screenshot 2022-06-16 at 19 19 49" src="https://user-images.githubusercontent.com/104083260/174139092-45e6010a-2462-4e46-b227-d55c6418605a.png">
+
+The NER script in this repo can be used to output data into a .csv file in the following format:
+<img width="297" alt="Screenshot 2022-06-16 at 19 21 37" src="https://user-images.githubusercontent.com/104083260/174139369-87196229-ec26-4185-a21c-44ac116470b9.png">
+
 
 #### Semi-supervised approach
+
+Semi-supervised approaches aim to label all graph nodes, given a small fraction of labelled nodes, which are used to evaluate a loss function.
+
+We use a small set of nodes (500 nodes ~ 5%), which are the top-ranking pages of the original algorithm, to train a Graph Convolutional Network (GCN) model. The model achieves accuracy of 76% on a hold-out set, which is similar to performance achieved on widely-used dataset, for example the Cora citation dataset (accuracy of 81%).
+
+We have also experimented with other models such as the Graph Attention Network (GAT), but these achieved lower prediction accuracy.
+
 
 #### Unsupervised approach
 
@@ -159,121 +177,51 @@ An unsupervised GNN can be thought of as an encoder-decoder model. Encoder embed
 
 Unsupervised GNN models differ in the construction of the encoder and the statistic that the model is aiming to reconstruct. The statistic is chosen so that the model suits the application at hand.
 
-Our choice of statistics has been motivated by the encouraging results of Node2Vec described earlier. Specifically, we aim to maximise the probability of observing node's neighbors given node's embedding. As this objective function is infeasible to calculate, we use second order random walks for negative sampling, as in Node2Vec. As an encoder, we use a two-layer convolutional GNN. Also in a direct analogy with Node2vec, we use cosine distance as a ranking metric.
+Our choice of statistics has been motivated by the encouraging results of Node2Vec described earlier. Specifically, we aim to maximise the probability of observing node's neighbors given node's embedding. As this objective function is infeasible to calculate, we use second order random walks for negative sampling, as in Node2Vec. As an encoder, we use a two-layer convolutional GNN. Also in a direct analogy with Node2vec, we use cosine distance as a ranking metric. A more detailed description of this approach is provided in `semi-supervised.ipynb` notebook.
+
+# Evaluation
+
+In order to compare different methods of ranking webpages, we proceed as follows:
+1. For each method obtain top 50 webpages (i.e. the webpages ranked as most relevant to the whole user journey)
+2. Label webpages from step 1 as relevant (value 1) or irrelevant (value 0)
+3. Calculate rolling proporton of relevant pages.
+
+As slready mentioned we focus on "economi recovery" whole user journey. However, in many cases we found it hard to decide whether a given webpage is relevant or irrelevant to the user journey. For this reason, we use two different sets of labels (one set labelled by Douglas, one by Jakub) and report the average of these two labelled sets. Overall, we label 300 webpages, of which 53% are labelled as relevant in one set of labels, while 60% are deemed relevant in another set of labels.
+
+The figure below shows the % of relevant pages (y-axis) within a given number of top pages (x-axis), for each method.
+![image](https://user-images.githubusercontent.com/71390120/187199771-28b2fd66-289d-45aa-844f-a48142005922.png)
 
 
+As we can see, Node2Vec performs significantly better than other methods. This seems to be due to its bias to explore neighboring nodes of a starting node (i.e. seed node). For example, when seed nodes are: '/find-a-job', '/universal-credit', and '/government/collections/financial-support-for-businesses-during-coronavirus-covid-19', the top 20 pages are as follows:
+    
+/advertise-job
+/universal-credit/contact-universal-credit
+/contact-jobcentre-plus/new-benefit-claims
+/government/organisations/department-for-work-pensions/about/recruitment
+/universal-credit/how-to-claim
+/guidance/universal-credit-advances
+/apply-universal-credit
+/universal-credit/eligibility
+/business-coronavirus-support-finder
+/sign-in-universal-credit
+/contact-jobcentre-plus
+/contact-jobcentre-plus/existing-benefit-claims
+/contact-jobcentre-plus/change-cancel-appointment
+/universal-credit/what-youll-get
+/guidance/covid-19-coronavirus-restrictions-what-you-can-and-cannot-do
+/coronavirus/business-support
+/jobcentre-plus-help-for-recruiters
+![image](https://user-images.githubusercontent.com/71390120/187200192-b2aec9e8-e699-4e27-9ad5-dc657e2d4004.png)
 
-
-
-We tried various approaches to this problem. They can all be seen as a successive modification of the curent approach.
-
-1. Replace random walks in the original approach by second-order random walks
-2. 
-
-The current approach utilises random walks which begin from a small set of seed nodes in an undirected graph. The "page-frequency-path-frequency" metric is utilised to rank the relevance of the pages in the journey. 
-
-We proposed a number of changes to this approach:
-- Use a directed graph, rather than an undirected graph
-- Utilise biased random walks (homophily vs equivariance)
-- Utilise Word2Vec embedding
-- Extract named-entities from gov.uk pages to enrich the nodes with metadata
-- Use graph neural networks to improve the edge-level predictions
-
-## Contents
-1. Random walk approaches
-2. Named-entity recognition
-3. Graph neural networks
-
-## Random walk approaches
-### Performance metric
-
-To compare different ranking algorithms we use the following performance measure.
-
-For a single run of the original ranking algorithm, we produce a list of top 100 pages. These are manually labelled (1 = relevant, 0 = irrelevant) and used for algorithm evaluation ("evaluation set") using the following metric:
-
-$$ \text{score} = \frac{ \text{median}(relevant) - \text{median}(irrelevant)}{ \sigma(relevant) + \sigma(irrelevant) }, $$
-
-where $ relevant $ and $ irrelevant $ are rankings of evaluation set pages labelled 1 and 0 respectively, and $ \sigma $ is a standard deviation.
-
-All of the apporaches discussed here involve some randomness, predominantly coming from random walks. For this reason, scores given below are averaged over multiple runs (usually 10 or 20) of the same method for the same combination of hyperparameters. 
-
-### Evaluation of proposed changes
-
-To choose which of the proposed steps has positive impact on rankings we ran the following ranking algorithms.
-
-1. **Biased random walks**: Use biased RWs (from the same seeds, using the same walk length, and the same ranking metric (pfpf)). This measures proposed changes 1 & 2.
-2. **Biased random walks & vector embeddings**: Use N2V embedding to vector space. Metric is a simple L2 norm distance from the same seeds as original ranking procedure.
-3. **Biased random walks & vector embeddings & W2V scores** (this corresponds to Node2Vec approach).
-
-The original apporach (undirected graph, unbiased RWs, pfpf score) gives a score of close to zero (with a meaon of **-0.016** and standard deviation 0.033). This constitutes our benchmark.
-
-The scores for different parameter combinations for the three methods can be found below. While certain parameter combinations are far from ideal (or sensible), the overall improvement in scores is evident.
-
-Overall our preliminary results indicate that performance can be improved by:
-1. Considering directed graph.
-2. Using biased random walks.
-3. Embedding nodes in vector space, especially if an apporpriate loss function is used.
-
-
-
-![image](https://user-images.githubusercontent.com/71390120/173446782-4f07a794-848b-4fb2-9998-4fd89dc30792.png)
-
-![image](https://user-images.githubusercontent.com/71390120/173681187-da7c20ed-3be6-45e0-944d-d8ecfd006f18.png)
-
-![image](https://user-images.githubusercontent.com/71390120/173446889-58b55ed9-6354-4409-80b0-29c89865cabe.png)
-
-### Further analysis
-
-The embedding in vector space gives us an opportunity to explore the whole network, in relation to the set of seed pages or economic recovery pages.
-
-In particular, vector embeddings can be analysed by clustering methods and dimensionality reduction techniques which enable visual analysis.
-
-To this end, consider mapping graph nodes to a 10-dimensional vector space and using TSNE to reduce the result to two dimensions. In the plot below the axis correspond to TSNE variables and orange dots are economic recovery pages.
-
-While not particularly beautiful, the economic recovery pages seem to exhibit a cluster structure. The TSNE mapping is highly random, and, over repeated replications, only two (rather than three as this plot may suggest) major clusters of ER pages seems to appear regularly - and these are mosttly visible along the y-axis.
-
-![tsne](https://user-images.githubusercontent.com/71390120/173683883-d97ea3f6-696b-43a8-b490-a95262816303.png)
-
-This encouraged us to look further. We use K-means clustering on a 10-dimensional vector space for this purpose.
-
-The numer of clusters is chosen using the sum of squared distances from cluster centres (see the plot below). Base don this metric we opt for 8 clusters.
-![image](https://user-images.githubusercontent.com/71390120/173684277-113f9186-ddc7-4022-a868-0ad96da0ce27.png)
-
-Interestingly, most of ER pages (33 out of 40) fall into two clusters, supporting the results of TSNE analysis.
-
-The plot below illustrates the connections between ER pages, with pages colored by cluster (2 pages were omitted as distort the plot). 
-
-![image](https://user-images.githubusercontent.com/71390120/173689496-61414ecb-492a-45cb-a18e-00ad74b6b8dd.png)
-
-
-It appears that the first cluster (purple) relates to a large extent to education, as it include sfor exmaple pages like:
-/topic/further-education-skills/apprenticeships
-/browse/working/finding-job
-/become-apprentice
-/browse/education/find-course
-/become-apprentice/apply-for-an-apprenticeship
-/find-traineeship
-/browse/education
-
-[[[link](https://user-images.githubusercontent.com/71390120/173688686-953878a4-0cf6-41d9-ace1-237f252c8bb8.png)|width=400px]]
-
-The second cluster (orange), on the other hand relates to more general queries, in particular claiming benefits.
-
-
-## Named-entity recognition 
-To enrich the nodes (webpages) from gov.uk with features prior to implementing GNNs, inference was performed from a previously created Named-Entity Recognition (NER) model which utilises the DistillBERT architecture (https://arxiv.org/abs/1910.01108). This model can be used to highlight named-entities in a number of categories (e.g., organisation, people) which can be visualisd as follows: 
-
-<img width="1741" alt="Screenshot 2022-06-16 at 19 19 49" src="https://user-images.githubusercontent.com/104083260/174139092-45e6010a-2462-4e46-b227-d55c6418605a.png">
-
-The NER script in this repo can be used to output data into a .csv file in the following format:
-<img width="297" alt="Screenshot 2022-06-16 at 19 21 37" src="https://user-images.githubusercontent.com/104083260/174139369-87196229-ec26-4185-a21c-44ac116470b9.png">
-
-## Graph Neural Networks (GNNs)
-The plan is to experiment with a number of GNN architectures (e.g., GAT, Hyperbolic GCN) to make edge level predictions. 
-
+A potential disadvantage is that webpages relevant to a user journey, but not falling into the three categories represented by the seed pages, are not uncovered.
 
 # References
 
 Grover, A. and Leskovec, J., 2016, August. node2vec: Scalable feature learning for networks. In Proceedings of the 22nd ACM SIGKDD international conference on Knowledge discovery and data mining (pp. 855-864).
 
 Hamilton, W.L., 2020. Graph representation learning. Synthesis Lectures on Artifical Intelligence and Machine Learning, 14(3), pp.1-159.
+
+Kipf, T. N. and Welling, M., 2016 Semi-supervised classification with graph convolutional networks.
+In ICLR, 2016.
+
+Sanh, V., Debut, L., Chaumond, J. and Wolf, T., 2019. DistilBERT, a distilled version of BERT: smaller, faster, cheaper and lighter. arXiv preprint arXiv:1910.01108.
