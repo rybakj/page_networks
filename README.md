@@ -3,6 +3,7 @@
 - `pickle_graph_objects.ipynb`: loads and processes initial graph objects (these are then used as starting points for all models)
 - `processing_labelled_sets.ipynb`: simple manipulation of labelled sets
 - `method_comparison.xlsb`: Contains top 50 pages for all approaches considered here and, based on these, the evaluation figure displayed below (see "Evaluation" section)
+- `GDS_ppt_july_final.pptx`: presentation of the project and our approach
 - `/NER`: contains notebooks and scripts for named-entity-recognition
 - `/context_approaches`: notebooks for context-based approaches, i.e. original approach and Node2Vec
 - `/gnns`: notebooks for semi-supervised and unsupervised gnn
