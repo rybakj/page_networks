@@ -1,4 +1,3 @@
-Graph files can be found here: https://drive.google.com/drive/folders/1bLMolKJoRzJKzIEQMTjcWfE0qF_VsoeN?usp=sharing
 
 # Repo structure:
 - `pickle_graph_objects.ipynb`: loads and processes initial graph objects (these are then used as starting points for all models)
