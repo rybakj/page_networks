@@ -58,6 +58,20 @@ class GCN_edgeweight(torch.nn.Module):
         return h
 
 def train_epoch(model, data, optimizer, criterion):
+    '''
+    Single training epoch
+    
+    Inputs:
+    - model: pytorch geometric graph neural network model
+    - data: pytorch geometric dataset. needs to contain attributes: "weight", "edge_index", "node_feature", "train_mask", "val_mask", "negative_matrix" and "positive_matrix"
+    - optimizer: pytorch optimizer
+    - criterion: loss function (taking arguments model, data.positive_matrix, data.negative_matrix, data.train_mask)
+    
+    Outputs:
+    - loss
+    - encoding of nodes (h)
+    - validation loss
+    '''
     optimizer.zero_grad()  # Clear gradients.
     h = model(data.node_feature, data.edge_index, edge_weight = data.weight)
 
@@ -70,7 +84,22 @@ def train_epoch(model, data, optimizer, criterion):
     return loss, h, val_loss
 
 def train(model, data, optimizer, criterion, num_epochs, dir_path, patience = 20, model_name = None):
-
+    '''
+    Inputs:
+    - model: pytorch geometric graph neural network model
+    - data: pytorch geometric dataset. needs to contain attributes: "weight", "edge_index", "node_feature", "train_mask", "val_mask", "negative_matrix" and "positive_matrix"
+    - optimizer: pytorch optimizer
+    - criterion: loss function (taking arguments model, data.positive_matrix, data.negative_matrix, data.train_mask)
+    - num_epochs: number of epochs
+    - dir_paths: path to save model checkpoints
+    - patience: patience for early stopping
+    - model_name: name of model checkpoints (if None, use name "model").
+    
+    Outputs:
+    - train loss history
+    - validation loss history
+    - node encodings (h)
+    '''
 
     best_val_loss = np.infty
 
@@ -126,15 +155,23 @@ def train(model, data, optimizer, criterion, num_epochs, dir_path, patience = 20
 
 
 class neg_sampling_loss(nn.Module):
+    '''
+    Loss function. Uses negative sampling.
+    '''
     
     def __init__(self, weight=None, size_average=True):
         super(neg_sampling_loss, self).__init__()
 
     def forward(self, embeddings, neighbors_array, negative_array, mask_array):
-        # get neighbors for input node 
-        # print(embeddings.grad_fn)
-        # c = embeddings
-        # c = Variable(embeddings, requires_grad=True)
+         '''
+         Inputs:
+         - embeddings: matrix of node embeddings (obtained by passing data through GNN model)
+         - neighbors_array: matrix of positive samples for each node. 
+                     Row corresponds to a source node. In columns are indices of positive samples.
+         - negative_array: matrix of negative samples for each node. Same structure as "neighbors_array"
+         - mask_array: mask (array of zeros and ones)
+         
+         '''
 
         loss = 0
 
